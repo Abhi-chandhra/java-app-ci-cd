@@ -1,0 +1,74 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_HUB_CREDENTIALS = 'docker-hub-creds'
+        DOCKER_IMAGE = 'apantham1/java-app'
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git 'https://github.com/Abhi-chandhra/java-app-ci-cd.git'
+            }
+        }
+
+        stage('Build with Java 17') {
+            agent {
+                docker {
+                    image 'openjdk:17'
+                    args '--network ci-cd-network'
+                }
+            }
+            steps {
+                sh 'javac MathUtils.java'
+            }
+        }
+
+        stage('Test with Java 11') {
+            agent {
+                docker {
+                    image 'openjdk:11'
+                    args '--network ci-cd-network'
+                }
+            }
+            steps {
+                sh 'java org.junit.runner.JUnitCore MathUtilsTest'
+            }
+        }
+
+        stage('Code Analysis with SonarQube') {
+            agent {
+                docker {
+                    image 'openjdk:8'
+                    args '--network ci-cd-network'
+                }
+            }
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh 'sonar-scanner -Dsonar.projectKey=java-app -Dsonar.sources=. -Dsonar.java.binaries=.'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build("${DOCKER_IMAGE}:latest")
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: "${DOCKER_HUB_CREDENTIALS}", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                    script {
+                        docker.withRegistry('', "${DOCKER_HUB_CREDENTIALS}") {
+                            docker.image("${DOCKER_IMAGE}:latest").push()
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
