@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    tools {
+        jdk 'java17'
+        maven 'maven3'
+    }
+
     stages {
         stage('Checkout Code') {
             steps {
@@ -10,31 +15,19 @@ pipeline {
 
         stage('Build with Java 17') {
             steps {
-                script {
-                    docker.image('maven:3.8.6-eclipse-temurin-17').inside('--network ci-cd-network') {
-                        sh 'mvn clean package'
-                    }
-                }
+                sh 'mvn clean compile'
             }
         }
 
-        stage('Test with Java 11') {
+        stage('Test with Java 17') {
             steps {
-                script {
-                    docker.image('maven:3.8.6-eclipse-temurin-11').inside('--network ci-cd-network') {
-                        sh 'mvn test'
-                    }
-                }
+                sh 'mvn test'
             }
         }
 
-        stage('Static Analysis with Java 8') {
+        stage('Static Analysis with Java 17') {
             steps {
-                script {
-                    docker.image('maven:3.8.6-eclipse-temurin-8').inside('--network ci-cd-network') {
-                        sh 'mvn sonar:sonar'
-                    }
-                }
+                sh 'mvn verify sonar:sonar'
             }
         }
     }
