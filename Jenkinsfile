@@ -8,23 +8,31 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Build with Java 17') {
             steps {
                 script {
-                    docker.image('maven:3.8.6-eclipse-temurin-17').inside {
+                    docker.image('maven:3.8.6-eclipse-temurin-17').inside('--network ci-cd-network') {
                         sh 'mvn clean package'
-                        echo 'Build Done'
                     }
                 }
             }
         }
 
-        stage('Test') {
+        stage('Test with Java 11') {
             steps {
                 script {
-                    docker.image('maven:3.8.6-eclipse-temurin-11').inside {
+                    docker.image('maven:3.8.6-eclipse-temurin-11').inside('--network ci-cd-network') {
                         sh 'mvn test'
-                        echo 'Test Done'
+                    }
+                }
+            }
+        }
+
+        stage('Static Analysis with Java 8') {
+            steps {
+                script {
+                    docker.image('maven:3.8.6-eclipse-temurin-8').inside('--network ci-cd-network') {
+                        sh 'mvn sonar:sonar'
                     }
                 }
             }
