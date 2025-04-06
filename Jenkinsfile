@@ -11,7 +11,7 @@ pipeline {
             agent any
             steps {
                 cleanWs()
-                git branch: 'main', url: 'https://github.com/BhanuAnusha/CalculatorApp.git'
+                git branch: 'main', url: 'https://github.com/Abhi-chandhra/java-app-ci-cd.git'
             }
         }
 
@@ -24,15 +24,13 @@ pipeline {
                 }
             }
             steps {
-                dir('calculator-app') {
-                    sh '''
-                        mvn clean package \
-                        -Dmaven.compiler.source=11 \
-                        -Dmaven.compiler.target=11 \
-                        -Djava.version=11
-                    '''
-                }
-                stash includes: 'calculator-app/target/**', name: 'compiled-artifacts'
+                sh '''
+                    mvn clean package \
+                    -Dmaven.compiler.source=11 \
+                    -Dmaven.compiler.target=11 \
+                    -Djava.version=11
+                '''
+                stash includes: 'target/**', name: 'compiled-artifacts'
             }
         }
 
@@ -46,13 +44,11 @@ pipeline {
             }
             steps {
                 unstash 'compiled-artifacts'
-                dir('calculator-app') {
-                    sh 'mvn test'
-                }
+                sh 'mvn test'
             }
             post {
                 always {
-                    junit 'calculator-app/**/target/surefire-reports/*.xml'
+                    junit 'target/surefire-reports/*.xml'
                 }
             }
         }
@@ -66,17 +62,16 @@ pipeline {
                 }
             }
             steps {
-                dir('calculator-app') {
-                    withSonarQubeEnv('SONARQUBE') {
-                        sh """
-                            mvn sonar:sonar \
-                            -Dsonar.projectKey=CalculatorApp \
-                            -Dsonar.host.url=${SONARQUBE_URL} \
-                            -Dsonar.login=${SONARQUBE_TOKEN}
-                        """
-                    }
+                withSonarQubeEnv('SONARQUBE') {
+                    sh """
+                        mvn verify sonar:sonar \
+                        -Dsonar.projectKey=java-app-ci-cd \
+                        -Dsonar.host.url=${SONARQUBE_URL} \
+                        -Dsonar.login=${SONARQUBE_TOKEN}
+                    """
                 }
             }
         }
     }
 }
+
