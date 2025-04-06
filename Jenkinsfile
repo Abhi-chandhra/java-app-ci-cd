@@ -4,6 +4,9 @@ pipeline {
     environment {
         SONARQUBE_URL = 'http://host.docker.internal:9000'
         SONARQUBE_TOKEN = credentials('SonarUser')
+        DOCKER_HUB_CREDENTIALS = credentials('docker-hub-creds')
+        DOCKER_IMAGE = 'apantham1/math-utils'
+        DOCKER_TAG = 'latest'
     }
 
     stages {
