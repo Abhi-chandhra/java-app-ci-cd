@@ -64,8 +64,8 @@ pipeline {
             steps {
                 withSonarQubeEnv('SONARQUBE') {
                     sh """
-                        mvn verify sonar:sonar \
-                        -Dsonar.projectKey=java-app-ci-cd \
+                        mvn sonar:sonar \
+                        -Dsonar.projectKey=MyProject \
                         -Dsonar.host.url=${SONARQUBE_URL} \
                         -Dsonar.login=${SONARQUBE_TOKEN}
                     """
