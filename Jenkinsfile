@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         SONARQUBE_URL = 'http://host.docker.internal:9000'
-        SONARQUBE_TOKEN = credentials('SONARUSER1')
+        SONARQUBE_TOKEN = credentials('SonarUser2')
         
     }
 
